@@ -49,8 +49,6 @@ export async function GET(req: NextRequest) {
 
     // Tokenni cookie-ga yozamiz
     res.cookies.set("authToken", data.access_token, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
       expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 kun
       path: "/",
     });
