@@ -20,12 +20,12 @@ export async function GET(
   { params }: { params: { table: string } }
 ) {
   // const token = "373820:33612612cbfe22576fbd715454ae78d2";
-  const token = request.cookies.get("authToken")?.value;
-  console.log("Token from cookies:", request.cookies.get("authToken"));
+  const token = request.cookies.get("posterStoreAuth")?.value;
+  console.log("Token from cookies:", request.cookies.get("posterStoreAuth"));
 
   if (!token) {
     return new Response(
-      `Unauthorized: Token required - ${request.cookies.get("authToken")}`,
+      `Unauthorized: Token required - ${request.cookies.get("posterStoreAuth")}`,
       {
         status: 401,
       }

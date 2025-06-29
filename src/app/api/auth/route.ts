@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export async function OPTIONS() {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  });
+}
+
 // Dynamic POST to access_token
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -43,12 +54,12 @@ export async function GET(req: NextRequest) {
       return new NextResponse("No access token in response", { status: 400 });
     }
 
-    const res = NextResponse.redirect(
+    const res = NextResponse.redirect(s
       `https://poster-storage.vercel.app?token=${data.access_token}`
     );
 
     // Tokenni cookie-ga yozamiz
-    res.cookies.set("authToken", data.access_token, {
+    res.cookies.set("posterStoreAuth", data.access_token, {
       expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 kun
     });
 
