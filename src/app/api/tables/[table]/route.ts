@@ -7,9 +7,11 @@ export async function GET(
 ) {
   // const token = "373820:33612612cbfe22576fbd715454ae78d2";
   const token = request.cookies.get("authToken")?.value;
-
+  
   if (!token) {
-    return new Response("Unauthorized: Token required", { status: 401 });
+    return new Response(`Unauthorized: Token required - ${token}`, {
+      status: 401,
+    });
   }
 
   const searchParams = request.nextUrl.searchParams;
