@@ -53,7 +53,7 @@ export default function TableExportRow({
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
         <div className="flex gap-4 flex-wrap items-center">
           <div className="relative">
-            {code}
+            {code || ""}
             <button
               onClick={() => setShowCalendar(!showCalendar)}
               className="border px-3 py-1 rounded bg-white hover:bg-gray-100 text-sm"
