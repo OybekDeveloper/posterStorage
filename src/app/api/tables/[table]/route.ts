@@ -1,20 +1,40 @@
 import { type NextRequest } from "next/server";
 import * as XLSX from "xlsx";
+import MD5 from "crypto-js/md5";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-  // const token = "373820:33612612cbfe22576fbd715454ae78d2";
-  const token = request.cookies.get("authToken")?.value;
-  
-  if (!token) {
-    return new Response(`Unauthorized: Token required - ${token}`, {
-      status: 401,
-    });
-  }
-
   const searchParams = request.nextUrl.searchParams;
+  const code = searchParams.get("code");
+  const application_id = "4164";
+  const application_secret = "1dde40dbeaf227f70997e183eafa6685";
+
+  const auth = {
+    application_id,
+    application_secret,
+    code,
+  };
+
+  const verify = MD5(
+    `${application_id}:${application_secret}:${code}`
+  ).toString();
+
+  const payload = {
+    ...auth,
+    verify,
+  };
+
+  // const token = "373820:33612612cbfe22576fbd715454ae78d2";
+  let token = request.cookies.get("authToken")?.value || "";
+
+  // if (!token) {
+  //   return new Response(`Unauthorized: Token required - ${token}`, {
+  //     status: 401,
+  //   });
+  // }
+
   const format = searchParams.get("format");
 
   const today = new Date();
@@ -29,6 +49,22 @@ export async function GET(
   try {
     const { table } = params;
     if (!table) throw new Error("Table name required");
+
+    const response = await fetch("https://joinposter.com/api/v2/auth/manage", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // yoki `application/x-www-form-urlencoded` bo'lishi mumkin
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await response.json();
+    console.log("Result auth:", result);
+    if (!result?.response?.access_token) {
+      throw new Error("Invalid token or authentication failed");
+    } else {
+      token = result.response.access_token;
+    }
 
     // Fetch all data
     const [suppliesRes, movesRes, ingredientRes, wastesRes] = await Promise.all(
