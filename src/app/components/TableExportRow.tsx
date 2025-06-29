@@ -16,7 +16,7 @@ const predefinedRanges = {
   last30Days: [new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000), today],
   last3Months: [new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()), today],
   lastYear: [new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()), today],
-};
+};  
 
 export default function TableExportRow({ table }: { table: string }) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
