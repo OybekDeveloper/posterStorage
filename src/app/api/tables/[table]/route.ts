@@ -1,5 +1,19 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
+
+export async function OPTIONS() {
+  return NextResponse.json(
+    {},
+    {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    }
+  );
+}
 
 export async function GET(
   request: NextRequest,
@@ -8,11 +22,14 @@ export async function GET(
   // const token = "373820:33612612cbfe22576fbd715454ae78d2";
   const token = request.cookies.get("authToken")?.value;
   console.log("Token from cookies:", request.cookies.get("authToken"));
-  
+
   if (!token) {
-    return new Response(`Unauthorized: Token required - ${request.cookies.get("authToken")}`, {
-      status: 401,
-    });
+    return new Response(
+      `Unauthorized: Token required - ${request.cookies.get("authToken")}`,
+      {
+        status: 401,
+      }
+    );
   }
 
   const searchParams = request.nextUrl.searchParams;
