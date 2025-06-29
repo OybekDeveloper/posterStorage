@@ -1,20 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import Cookies from "js-cookie";
 
 const today = new Date();
 
 const predefinedRanges = {
   today: [today, today],
-  last7Days: [new Date(today.getTime() - 6 * 86400000), today],
-  last30Days: [new Date(today.getTime() - 29 * 86400000), today],
+  last7Days: [new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000), today],
+  last30Days: [new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000), today],
   last3Months: [new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()), today],
   lastYear: [new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()), today],
 };
@@ -22,12 +21,6 @@ const predefinedRanges = {
 export default function TableExportRow({ table }: { table: string }) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
-
-  useEffect(() => {
-    const token = Cookies.get("authToken");
-    setHasToken(!!token);
-  }, []);
 
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
@@ -61,6 +54,8 @@ export default function TableExportRow({ table }: { table: string }) {
                   showOutsideDays
                   locale={ru}
                 />
+
+                {/* Быстрые диапазоны */}
                 <div className="flex flex-wrap gap-2 mt-2 justify-start">
                   {Object.entries(predefinedRanges).map(([label, [from, to]]) => (
                     <button
@@ -84,21 +79,12 @@ export default function TableExportRow({ table }: { table: string }) {
             )}
           </div>
 
-          {hasToken ? (
-            <Link
-              className="underline text-blue-600 text-sm"
-              href={`/api/tables/${table}?format=xlsx&dateFrom=${fromDate}&dateTo=${toDate}`}
-            >
-              Экспорт XLSX
-            </Link>
-          ) : (
-            <a
-              href="https://joinposter.com/api/auth?application_id=4164&redirect_uri=https://poster-storage.vercel.app/api/auth&response_type=code"
-              className="text-sm bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
-            >
-              Регистрация
-            </a>
-          )}
+          <Link
+            className="underline text-blue-600 text-sm"
+            href={`/api/tables/${table}?format=xlsx&dateFrom=${fromDate}&dateTo=${toDate}`}
+          >
+            Экспорт XLSX
+          </Link>
         </div>
       </div>
     </div>
