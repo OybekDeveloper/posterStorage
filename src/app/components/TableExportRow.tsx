@@ -25,10 +25,10 @@ const predefinedRanges = {
 };
 
 export default function TableExportRow({
-  token,
+  code,
   table,
 }: {
-  token: string | null;
+  code: string;
   table: string;
 }) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
@@ -52,8 +52,8 @@ export default function TableExportRow({
     <div className="flex flex-col gap-4 border-b py-4 relative">
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
         <div className="flex gap-4 flex-wrap items-center">
-          <h1>Token - {token}</h1>
           <div className="relative">
+            {code}
             <button
               onClick={() => setShowCalendar(!showCalendar)}
               className="border px-3 py-1 rounded bg-white hover:bg-gray-100 text-sm"
