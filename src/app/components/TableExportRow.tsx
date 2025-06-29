@@ -5,6 +5,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
 const today = new Date();
@@ -18,19 +19,16 @@ const predefinedRanges = {
 };
 
 export default function TableExportRow({ table }: { table: string }) {
-  const [range, setRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
-  });
+  const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const fromDate = range.from ? format(range.from, "yyyy-MM-dd") : "";
-  const toDate = range.to ? format(range.to, "yyyy-MM-dd") : "";
+  const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
+  const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
 
   const title =
-    range.from && range.to
+    range?.from && range?.to
       ? `${format(range.from, "dd.MM.yyyy", { locale: ru })} - ${format(range.to, "dd.MM.yyyy", { locale: ru })}`
-      : range.from
+      : range?.from
       ? `${format(range.from, "dd.MM.yyyy", { locale: ru })}`
       : "Выберите дату";
 
@@ -51,7 +49,7 @@ export default function TableExportRow({ table }: { table: string }) {
                 <DayPicker
                   mode="range"
                   selected={range}
-                  onSelect={(value) => setRange(value!)}
+                  onSelect={(value) => setRange(value)}
                   numberOfMonths={1}
                   showOutsideDays
                   locale={ru}
