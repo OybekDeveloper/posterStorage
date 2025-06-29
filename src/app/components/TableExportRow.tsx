@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import Cookies from "js-cookie";
 
 const today = new Date();
 
@@ -25,10 +24,15 @@ const predefinedRanges = {
   ],
 };
 
-export default function TableExportRow({ table }: { table: string }) {
+export default function TableExportRow({
+  token,
+  table,
+}: {
+  token: string | null;
+  table: string;
+}) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
 
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
@@ -43,13 +47,6 @@ export default function TableExportRow({ table }: { table: string }) {
       : range?.from
       ? `${format(range.from, "dd.MM.yyyy", { locale: ru })}`
       : "Выберите дату";
-
-  useEffect(() => {
-    const tokenString = Cookies.get("authToken");
-    if (tokenString) {
-      setToken(tokenString);
-    }
-  }, []);
 
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
