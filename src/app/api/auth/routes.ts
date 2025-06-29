@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
   }
 
   const auth = {
-    application_id: "3771",
-    application_secret: "9c5d4630518324c78ef4468c28d8effd",
+    application_id: "4164",
+    application_secret: "1dde40dbeaf227f70997e183eafa6685",
     code,
     account,
   };
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   formData.append("application_id", auth.application_id);
   formData.append("application_secret", auth.application_secret);
   formData.append("grant_type", "authorization_code");
-  formData.append("redirect_uri", `https://payment-wek9.onrender.com/auth`);
+  formData.append("redirect_uri", `https://poster-storage.vercel.app/api/auth`);
   formData.append("code", auth.code);
 
   try {
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     }
 
     const res = NextResponse.redirect(
-      `https://payment-wek9.onrender.com?token=${data.access_token}`
+      `https://poster-storage.vercel.app?token=${data.access_token}`
     );
 
     // Tokenni cookie-ga yozamiz
