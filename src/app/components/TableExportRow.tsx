@@ -27,9 +27,11 @@ const predefinedRanges = {
 export default function TableExportRow({
   code,
   table,
+  token,
 }: {
   code: string;
   table: string;
+  token?: string;
 }) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -104,7 +106,7 @@ export default function TableExportRow({
             Экспорт XLSX
           </Link>
         </div>
-        <h1>{code}</h1>
+        <h1>{token}</h1>
       </div>
     </div>
   );
