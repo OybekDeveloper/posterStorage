@@ -104,6 +104,7 @@ export default function TableExportRow({
             Экспорт XLSX
           </Link>
         </div>
+        <h1>{code}</h1>
       </div>
     </div>
   );
