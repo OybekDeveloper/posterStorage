@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse("No access token in response", { status: 400 });
     }
 
-    const res = NextResponse.redirect(s
+    const res = NextResponse.redirect(
       `https://poster-storage.vercel.app?token=${data.access_token}`
     );
 
