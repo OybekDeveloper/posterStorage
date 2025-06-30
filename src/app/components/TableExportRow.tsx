@@ -106,8 +106,11 @@ export default function TableExportRow({
             Экспорт XLSX
           </Link>
         </div>
-        <h1>{token}</h1>
       </div>
+        <div className="">
+          <h1>Token - {token}</h1>
+          <h1>Code - {code}</h1>
+        </div>
     </div>
   );
 }
