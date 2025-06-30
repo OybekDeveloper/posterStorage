@@ -2,8 +2,8 @@ import TableExportRow from "../components/TableExportRow";
 
 export default async function page({ params }: { params: { code: string } }) {
   const code = params?.code || "";
-  // const token = await fetch(`http://localhost:3000/api/token?code=${code}`);
-  // const tokenData = await token.json();
+  const token = await fetch(`http://localhost:3000/api/token?code=${code}`);
+  const tokenData = await token.json();
 
   return (
     <section className="container flex flex-col p-12 min-h-screen text-base">
