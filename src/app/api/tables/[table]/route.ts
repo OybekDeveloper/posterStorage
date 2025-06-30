@@ -6,47 +6,47 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-  const code = request.nextUrl.searchParams.get("code");
+  const token = request.nextUrl.searchParams.get("token");
 
-  if (!code) {
-    return new Response("Unauthorized: Token or code required", {
-      status: 401,
-    });
-  }
+  // if (!code) {
+  //   return new Response("Unauthorized: Token or code required", {
+  //     status: 401,
+  //   });
+  // }
 
-  const application_id = "4164";
-  const application_secret = "1dde40dbeaf227f70997e183eafa6685";
-  const verifyString = `${application_id}:${application_secret}:${code}`;
-  const verify = crypto.createHash("md5").update(verifyString).digest("hex");
+  // const application_id = "4164";
+  // const application_secret = "1dde40dbeaf227f70997e183eafa6685";
+  // const verifyString = `${application_id}:${application_secret}:${code}`;
+  // const verify = crypto.createHash("md5").update(verifyString).digest("hex");
 
-  const formBody = new URLSearchParams({
-    application_id: "4164",
-    application_secret: "1dde40dbeaf227f70997e183eafa6685",
-    code,
-    verify,
-  });
+  // const formBody = new URLSearchParams({
+  //   application_id: "4164",
+  //   application_secret: "1dde40dbeaf227f70997e183eafa6685",
+  //   code,
+  //   verify,
+  // });
 
-  const authRes = await fetch("https://joinposter.com/api/v2/auth/manage", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: formBody.toString(),
-  });
+  // const authRes = await fetch("https://joinposter.com/api/v2/auth/manage", {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/x-www-form-urlencoded",
+  //   },
+  //   body: formBody.toString(),
+  // });
 
-  const authData = await authRes.json();
-  console.log({ authData });
+  // const authData = await authRes.json();
+  // console.log({ authData });
 
-  if (!authData.access_token) {
-    return new Response(
-      `Unauthorized: Could not get token - ${
-        authData.message || "Unknown error"
-      }`,
-      { status: 401 }
-    );
-  }
+  // if (!authData.access_token) {
+  //   return new Response(
+  //     `Unauthorized: Could not get token - ${
+  //       authData.message || "Unknown error"
+  //     }`,
+  //     { status: 401 }
+  //   );
+  // }
 
-  const token = authData.access_token && authData.access_token;
+  // const token = authData.access_token && authData.access_token;
 
   const searchParams = request.nextUrl.searchParams;
   const format = searchParams.get("format");

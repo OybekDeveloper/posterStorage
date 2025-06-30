@@ -101,7 +101,7 @@ export default function TableExportRow({
 
           <Link
             className="underline text-blue-600 text-sm"
-            href={`/api/tables/${table}?format=xlsx&dateFrom=${fromDate}&dateTo=${toDate}&code=${code}`}
+            href={`/api/tables/${table}?format=xlsx&dateFrom=${fromDate}&dateTo=${toDate}&token=${token}`}
           >
             Экспорт XLSX
           </Link>
