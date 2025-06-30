@@ -1,36 +1,52 @@
 import { type NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-
-export async function OPTIONS() {
-  return NextResponse.json(
-    {},
-    {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    }
-  );
-}
+import crypto from "crypto";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-  // const token = "373820:33612612cbfe22576fbd715454ae78d2";
-  const token = request.cookies.get("posterStoreAuth")?.value;
-  console.log("Token from cookies:", request.cookies.get("posterStoreAuth"));
+  const code = request.nextUrl.searchParams.get("code");
 
-  if (!token) {
+  if (!code) {
+    return new Response("Unauthorized: Token or code required", {
+      status: 401,
+    });
+  }
+
+  const application_id = "4164";
+  const application_secret = "1dde40dbeaf227f70997e183eafa6685";
+  const verifyString = `${application_id}:${application_secret}:${code}`;
+  const verify = crypto.createHash("md5").update(verifyString).digest("hex");
+
+  const formBody = new URLSearchParams({
+    application_id: "4164",
+    application_secret: "1dde40dbeaf227f70997e183eafa6685",
+    code,
+    verify,
+  });
+
+  const authRes = await fetch("https://joinposter.com/api/v2/auth/manage", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: formBody.toString(),
+  });
+
+  const authData = await authRes.json();
+  console.log({ authData });
+
+  if (!authData.access_token) {
     return new Response(
-      `Unauthorized: Token required - ${request.cookies.get("posterStoreAuth")}`,
-      {
-        status: 401,
-      }
+      `Unauthorized: Could not get token - ${
+        authData.message || "Unknown error"
+      }`,
+      { status: 401 }
     );
   }
+
+  const token = authData.access_token && authData.access_token;
 
   const searchParams = request.nextUrl.searchParams;
   const format = searchParams.get("format");
@@ -48,7 +64,6 @@ export async function GET(
     const { table } = params;
     if (!table) throw new Error("Table name required");
 
-    // Fetch all data
     const [suppliesRes, movesRes, ingredientRes, wastesRes] = await Promise.all(
       [
         fetch(
@@ -74,13 +89,6 @@ export async function GET(
         wastesRes.json(),
       ]);
 
-    if (!suppliesData?.response) throw new Error("No supplies data found");
-    if (!movesData?.response) throw new Error("No moves data found");
-    if (!ingredientData?.response) throw new Error("No ingredient data found");
-    if (!wastesData?.response) throw new Error("No wastes data found");
-
-    console.log({ suppliesData, movesData, ingredientData, wastesData });
-    // ==== SUPPLIES ====
     const suppliesHeader = [
       [
         "ID",
@@ -114,7 +122,6 @@ export async function GET(
       ...suppliesBody,
     ]);
 
-    // ==== MOVES ====
     const movesHeader = [
       [
         "ID",
@@ -143,7 +150,6 @@ export async function GET(
     ]);
     const movesSheet = XLSX.utils.aoa_to_sheet([...movesHeader, ...movesBody]);
 
-    // ==== INGREDIENTS ====
     const ingredientsHeader = [
       [
         "ID",
@@ -191,7 +197,6 @@ export async function GET(
       ...ingredientsBody,
     ]);
 
-    // ==== WASTES ====
     const wastesHeader = [
       [
         "ID",
@@ -244,8 +249,6 @@ export async function GET(
     return new Response("Unsupported format", { status: 400 });
   } catch (e) {
     console.error(e);
-    return new Response((e as Error).message, {
-      status: 400,
-    });
+    return new Response((e as Error).message, { status: 400 });
   }
 }
