@@ -6,7 +6,6 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-
   // if (!code) {
   //   return new Response("Unauthorized: Token or code required", {
   //     status: 401,
@@ -50,6 +49,7 @@ export async function GET(
   const searchParams = request.nextUrl.searchParams;
   const format = searchParams.get("format");
   const token = searchParams.get("token");
+  // const token = "373820:1347846e7da9f15a777be819fca676fc";
 
   const today = new Date();
   const oneMonthAgo = new Date(today);
@@ -59,7 +59,7 @@ export async function GET(
     searchParams.get("dateFrom") || oneMonthAgo.toISOString().split("T")[0];
   const dateTo =
     searchParams.get("dateTo") || today.toISOString().split("T")[0];
-
+  console.log({ dateFrom, dateTo });
   try {
     const { table } = params;
     if (!table) throw new Error("Table name required");
@@ -67,16 +67,16 @@ export async function GET(
     const [suppliesRes, movesRes, ingredientRes, wastesRes] = await Promise.all(
       [
         fetch(
-          `https://joinposter.com/api/storage.getSupplies?token=${token}&date_from=${dateFrom}&date_to=${dateTo}`
+          `https://joinposter.com/api/storage.getSupplies?token=${token}&dateFrom=${dateFrom}&dateTo=${dateTo}`
         ),
         fetch(
-          `https://joinposter.com/api/storage.getSupplies?token=${token}&date_from=${dateFrom}&date_to=${dateTo}`
+          `https://joinposter.com/api/storage.getSupplies?token=${token}&dateFrom=${dateFrom}&dateTo=${dateTo}`
         ),
         fetch(
-          `https://joinposter.com/api/storage.getIngredientWriteOff?token=${token}&date_from=${dateFrom}&date_to=${dateTo}`
+          `https://joinposter.com/api/storage.getIngredientWriteOff?token=${token}&dateFrom=${dateFrom}&dateTo=${dateTo}`
         ),
         fetch(
-          `https://joinposter.com/api/storage.getWastes?token=${token}&date_from=${dateFrom}&date_to=${dateTo}`
+          `https://joinposter.com/api/storage.getWastes?token=${token}&dateFrom=${dateFrom}&dateTo=${dateTo}`
         ),
       ]
     );
