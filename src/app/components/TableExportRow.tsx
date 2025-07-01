@@ -64,7 +64,9 @@ export default function TableExportRow({
         console.error("Ошибка при получении токена:", error);
       }
     };
-    fetchToken();
+    if (code) {
+      fetchToken();
+    }
   }, []);
 
   return (
