@@ -127,9 +127,6 @@ export default function TableExportRow({
           </Link>
         </div>
       </div>
-      <div className="">
-        <h1>Code - {code}</h1>
-      </div>
     </div>
   );
 }
