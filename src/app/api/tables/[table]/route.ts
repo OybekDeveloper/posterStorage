@@ -6,7 +6,6 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { table: string } }
 ) {
-  const token = request.nextUrl.searchParams.get("token");
 
   // if (!code) {
   //   return new Response("Unauthorized: Token or code required", {
@@ -50,6 +49,7 @@ export async function GET(
 
   const searchParams = request.nextUrl.searchParams;
   const format = searchParams.get("format");
+  const token = searchParams.get("token");
 
   const today = new Date();
   const oneMonthAgo = new Date(today);

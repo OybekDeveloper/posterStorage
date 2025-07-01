@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
@@ -27,14 +27,13 @@ const predefinedRanges = {
 export default function TableExportRow({
   code,
   table,
-  token,
 }: {
   code: string;
   table: string;
-  token?: string;
 }) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [token, setToken] = useState("");
 
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
@@ -49,6 +48,24 @@ export default function TableExportRow({
       : range?.from
       ? `${format(range.from, "dd.MM.yyyy", { locale: ru })}`
       : "Выберите дату";
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await fetch(
+          `https://poster-storage.vercel.app/api/token?code=${code}`
+        );
+        if (!response.ok) {
+          throw new Error("Ошибка при получении токена");
+        }
+        const data = await response.json();
+        console.log("Токен получен:", data.token);
+      } catch (error) {
+        console.error("Ошибка при получении токена:", error);
+      }
+    };
+    fetchToken();
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
@@ -107,10 +124,9 @@ export default function TableExportRow({
           </Link>
         </div>
       </div>
-        <div className="">
-          <h1>Token - {token}</h1>
-          <h1>Code - {code}</h1>
-        </div>
+      <div className="">
+        <h1>Code - {code}</h1>
+      </div>
     </div>
   );
 }
