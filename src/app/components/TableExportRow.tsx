@@ -60,6 +60,7 @@ export default function TableExportRow({
         }
         const data = await response.json();
         console.log("Токен получен:", data.token);
+        setToken(data.token);
       } catch (error) {
         console.error("Ошибка при получении токена:", error);
       }
