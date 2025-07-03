@@ -125,7 +125,7 @@ export default function TableExportRow({ code }: { code: string }) {
             ]),
           },
           {
-            name: "Списания",
+            name: "Перемещения",
             headers: [
               "Дата",
               "Из склада",
@@ -193,7 +193,7 @@ export default function TableExportRow({ code }: { code: string }) {
           //   ]),
           // },
           {
-            name: "Потери",
+            name: "Списания",
             headers: [
               "Причина",
               "Сумма",
