@@ -5,25 +5,24 @@ export async function fetchExportData(token: string, from: string, to: string) {
   const url = (endpoint: string) =>
     `${base}/${endpoint}?token=${token}&dateFrom=${from}&dateTo=${to}`;
 
-  const [suppliesRes, movesRes, ingredientRes, wastesRes] = await Promise.all([
+  const [suppliesRes, movesRes, wastesRes] = await Promise.all([
     fetch(url("storage.getSupplies")),
     fetch(url("storage.getMoves")),
-    fetch(url("storage.getIngredientWriteOff")),
+    // fetch(url("storage.getIngredientWriteOff")),
     fetch(url("storage.getWastes")),
   ]);
 
-  const [suppliesData, movesData, ingredientData, wastesData] =
-    await Promise.all([
-      suppliesRes.json(),
-      movesRes.json(),
-      ingredientRes.json(),
-      wastesRes.json(),
-    ]);
+  const [suppliesData, movesData, wastesData] = await Promise.all([
+    suppliesRes.json(),
+    movesRes.json(),
+    // ingredientRes.json(),
+    wastesRes.json(),
+  ]);
 
   return {
     suppliesData: suppliesData.response ?? [],
     movesData: movesData.response ?? [],
-    ingredientData: ingredientData.response ?? [],
+    // ingredientData: ingredientData.response ?? [],
     wastesData: wastesData.response ?? [],
   };
 }
