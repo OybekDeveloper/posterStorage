@@ -9,7 +9,7 @@ export default async function page({
 
   return (
     <section className="container flex flex-col p-12 min-h-screen text-base">
-      <TableExportRow code={code} table="Data export exl" />
+      <TableExportRow code={code} />
     </section>
   );
 }
