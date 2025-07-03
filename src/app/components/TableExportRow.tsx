@@ -1,43 +1,28 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { fetchExportData } from "../actions/poster";
 
 const today = new Date();
-
 const predefinedRanges = {
   today: [today, today],
-  last7Days: [new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000), today],
-  last30Days: [new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000), today],
-  last3Months: [
-    new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()),
-    today,
-  ],
-  lastYear: [
-    new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()),
-    today,
-  ],
+  last7Days: [new Date(today.getTime() - 6 * 86400000), today],
+  last30Days: [new Date(today.getTime() - 29 * 86400000), today],
 };
 
-export default function TableExportRow({
-  code,
-  table,
-}: {
-  code: string;
-  table: string;
-}) {
+export default function TableExportRow({ code }: { code: string }) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [token, setToken] = useState("");
 
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
-
   const title =
     range?.from && range?.to
       ? `${format(range.from, "dd.MM.yyyy", { locale: ru })} - ${format(
@@ -45,30 +30,50 @@ export default function TableExportRow({
           "dd.MM.yyyy",
           { locale: ru }
         )}`
-      : range?.from
-      ? `${format(range.from, "dd.MM.yyyy", { locale: ru })}`
       : "Выберите дату";
 
   useEffect(() => {
-    const fetchToken = async () => {
+    const getToken = async () => {
       try {
-        const response = await fetch(
-          `https://poster-storage.vercel.app/api/token?code=${code}`
-        );
-        if (!response.ok) {
-          throw new Error("Ошибка при получении токена");
-        }
-        const data = await response.json();
-        console.log("Токен получен:", data.token);
+        const res = await fetch(`/api/token?code=${code}`);
+        const data = await res.json();
         setToken(data.token);
-      } catch (error) {
-        console.error("Ошибка при получении токена:", error);
+      } catch (err) {
+        console.error("Token olishda xatolik:", err);
       }
     };
-    if (code) {
-      fetchToken();
+    if (code) getToken();
+  }, [code]);
+
+  const handleExport = () => {
+    if (!token || !fromDate || !toDate) {
+      console.log({ token, fromDate, toDate });
+      console.error("Token yoki sana tanlanmagan");
+      return;
     }
-  }, []);
+
+    startTransition(async () => {
+      const data = await fetchExportData(token, fromDate, toDate);
+
+      const res = await fetch("/api/export-xlsx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          dateFrom: fromDate,
+          dateTo: toDate,
+        }),
+      });
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fromDate}-${toDate}.xlsx`;
+      a.click();
+      a.remove();
+    });
+  };
 
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
@@ -87,13 +92,12 @@ export default function TableExportRow({
                 <DayPicker
                   mode="range"
                   selected={range}
-                  onSelect={(value) => setRange(value)}
+                  onSelect={setRange}
                   numberOfMonths={1}
                   showOutsideDays
                   locale={ru}
                 />
 
-                {/* Быстрые диапазоны */}
                 <div className="flex flex-wrap gap-2 mt-2 justify-start">
                   {Object.entries(predefinedRanges).map(
                     ([label, [from, to]]) => (
@@ -107,8 +111,6 @@ export default function TableExportRow({
                             today: "Сегодня",
                             last7Days: "Последняя неделя",
                             last30Days: "Последний месяц",
-                            last3Months: "Последние 3 месяца",
-                            lastYear: "Последний год",
                           }[label]
                         }
                       </button>
@@ -119,12 +121,13 @@ export default function TableExportRow({
             )}
           </div>
 
-          <Link
+          <button
+            onClick={handleExport}
+            disabled={isPending}
             className="underline text-blue-600 text-sm"
-            href={`/api/tables/${table}?format=xlsx&dateFrom=${fromDate}&dateTo=${toDate}&token=${token}`}
           >
-            Экспорт XLSX
-          </Link>
+            {isPending ? "Загрузка..." : "Экспорт XLSX"}
+          </button>
         </div>
       </div>
     </div>
