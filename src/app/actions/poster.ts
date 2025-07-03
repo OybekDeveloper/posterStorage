@@ -7,7 +7,7 @@ export async function fetchExportData(token: string, from: string, to: string) {
 
   const [suppliesRes, movesRes, ingredientRes, wastesRes] = await Promise.all([
     fetch(url("storage.getSupplies")),
-    fetch(url("storage.getSupplies")),
+    fetch(url("storage.getMoves")),
     fetch(url("storage.getIngredientWriteOff")),
     fetch(url("storage.getWastes")),
   ]);

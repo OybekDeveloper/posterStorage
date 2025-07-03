@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { format, subDays, subMonths } from "date-fns";
+import { format, set, subDays, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
@@ -26,6 +26,7 @@ export default function TableExportRow({ code }: { code: string }) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [token, setToken] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
@@ -73,6 +74,7 @@ export default function TableExportRow({ code }: { code: string }) {
   const handleExport = () => {
     if (!token || !fromDate || !toDate) {
       toast.error("Пожалуйста, выберите дату");
+      setErrorMessage("Пожалуйста, выберите дату");
       return;
     }
 
@@ -82,15 +84,17 @@ export default function TableExportRow({ code }: { code: string }) {
 
     if (dayDiff > 31) {
       toast.error("Максимальный интервал — 1 месяц");
+      setErrorMessage("Максимальный интервал — 1 месяц");
       return;
     }
+    setErrorMessage("");
 
     startTransition(async () => {
-      toast.loading("Загрузка данных и генерация файла...");
-
       try {
         const { suppliesData, movesData, ingredientData, wastesData } =
           await fetchExportData(token, fromDate, toDate);
+
+        console.log({ suppliesData, movesData, ingredientData, wastesData });
 
         const exportChunks = [
           {
@@ -139,9 +143,9 @@ export default function TableExportRow({ code }: { code: string }) {
             data: movesData.map((item: any) => [
               item.moving_id,
               item.date,
-              item.from_stoarge,
+              item.from_storage, // ✅ to‘g‘rilandi
               item.from_storage_name,
-              item.to_storge,
+              item.to_storage, // ✅ to‘g‘rilandi
               item.to_storage_name,
               item.user_id,
               item.user_name,
@@ -264,7 +268,7 @@ export default function TableExportRow({ code }: { code: string }) {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `${fromDate}-${toDate}-Combined.xlsx`;
+          a.download = `${fromDate}-${toDate}-Комбинированный.xlsx`;
           a.click();
           a.remove();
           URL.revokeObjectURL(url);
@@ -273,6 +277,7 @@ export default function TableExportRow({ code }: { code: string }) {
         toast.success("Файлы успешно скачаны!");
       } catch (err) {
         toast.error("Ошибка при экспорте данных");
+        setErrorMessage("Ошибка при экспорте данных");
         console.error(err);
       }
     });
@@ -280,7 +285,10 @@ export default function TableExportRow({ code }: { code: string }) {
 
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+      <div className="flex flex-col justify-center items-center gap-4">
+        {errorMessage && (
+          <p className="text-center text-red-600 text-sm">{errorMessage}</p>
+        )}
         <div className="flex gap-4 flex-wrap items-center">
           <div className="relative">
             <button
