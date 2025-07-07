@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { format, set, subDays, subMonths } from "date-fns";
-import { ru } from "date-fns/locale";
+import { is, ru } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -45,7 +45,7 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    // setToken("619530:145315755b9c1405fce29e66060cd2a4");
+    setToken("619530:145315755b9c1405fce29e66060cd2a4");
 
     const getToken = async () => {
       try {
@@ -373,7 +373,9 @@ export default function TableExportRow({ code }: { code: string }) {
               item?.type == 10 ? item?.ingredient_name : item?.product_name,
               item?.type == 10 ? item?.ingredient_left : item?.count,
               item?.ingredient_unit,
-              item?.type == 10 ? item?.total_sum_netto : item?.cost_netto,
+              item?.type == 10
+                ? formatSupplySum(Number(item?.total_sum_netto)) + " СУМ"
+                : formatSupplySum(Number(item?.cost_netto)) + " СУМ",
               // item.user_id,
               item.reason_name,
             ]),
@@ -442,6 +444,25 @@ export default function TableExportRow({ code }: { code: string }) {
 
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
+      {true && (
+        <div className="z-10 h-full absolute top-0 left-0 w-screen flex justify-center items-center backdrop-blur-[3px]">
+            <div className="spinner center">
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+              <div className="spinner-blade"></div>
+            </div>
+          <h1 className="pt-10">Пожалуйста, подождите, идет загрузка данных...</h1>
+        </div>
+      )}
       <div className="flex flex-col justify-center items-center gap-4">
         {errorMessage && (
           <p className="text-center text-red-600 text-sm">{errorMessage}</p>
