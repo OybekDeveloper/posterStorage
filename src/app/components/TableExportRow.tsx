@@ -445,7 +445,7 @@ export default function TableExportRow({ code }: { code: string }) {
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
       {isPending && (
-        <div className="z-10 h-full absolute top-0 left-0 w-screen flex justify-center items-center backdrop-blur-[3px]">
+        <div className="z-[999] h-screen absolute top-0 left-0 w-screen flex justify-center items-center backdrop-blur-[3px]">
             <div className="spinner center">
               <div className="spinner-blade"></div>
               <div className="spinner-blade"></div>
