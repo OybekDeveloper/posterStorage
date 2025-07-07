@@ -206,8 +206,8 @@ export default function TableExportRow({ code }: { code: string }) {
               return [];
             }
             return elements.map((element: any) => {
-              let findRest = {};
-              const findStore= storesData.find(
+              let findRest;
+              const findStore = storesData.find(
                 (store: any) => store.storage_id == fullWastes.storage_id
               );
               if (element?.type == "10") {
