@@ -26,3 +26,23 @@ export async function fetchExportData(token: string, from: string, to: string) {
     wastesData: wastesData.response ?? [],
   };
 }
+
+export async function fetchPosterApi(
+  token: string,
+  endpoint: string,
+  params: Record<string, string> = {}
+) {
+  const base = "https://joinposter.com/api";
+  const url = new URL(`${base}/${endpoint}`);
+  url.searchParams.set("token", token);
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`Error fetching data from Poster API: ${response.statusText}`);
+  }
+
+  return response.json();
+}

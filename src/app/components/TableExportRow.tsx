@@ -7,9 +7,10 @@ import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import * as XLSX from "xlsx";
-import { fetchExportData } from "../actions/poster";
+import { fetchExportData, fetchPosterApi } from "../actions/poster";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { formatCustomDate, formatSupplySum } from "../lib/functions";
 
 const today = new Date();
 const MAX_ROWS = 30000;
@@ -27,6 +28,9 @@ export default function TableExportRow({ code }: { code: string }) {
   const [isPending, startTransition] = useTransition();
   const [token, setToken] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [productsData, setProductsData] = useState<any[]>([]);
+  const [ingredientsData, setIngredientsData] = useState<any[]>([]);
+  const [storesData, setStoresData] = useState<any[]>([]);
 
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
@@ -46,6 +50,7 @@ export default function TableExportRow({ code }: { code: string }) {
     const getToken = async () => {
       try {
         const res = await fetch(`/api/token?code=${code}`);
+
         const data = await res.json();
         setToken(data.token);
       } catch (err) {
@@ -54,6 +59,30 @@ export default function TableExportRow({ code }: { code: string }) {
     };
     if (code) getToken();
   }, [code]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!token) return;
+
+      try {
+        const [productsResponse, ingredientsResponse, storesData] =
+          await Promise.all([
+            fetchPosterApi(token, "menu.getProducts"),
+            fetchPosterApi(token, "menu.getIngredients"),
+            fetchPosterApi(token, "storage.getStorages"),
+          ]);
+
+        setProductsData(productsResponse.response || []);
+        setIngredientsData(ingredientsResponse.response || []);
+        setStoresData(storesData.response || []);
+        console.log({ productsResponse, ingredientsResponse });
+      } catch (err) {
+        toast.error("Ошибка при получении данных");
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, [token]);
 
   const splitAndAppendSheets = (
     wb: XLSX.WorkBook,
@@ -91,8 +120,139 @@ export default function TableExportRow({ code }: { code: string }) {
 
     startTransition(async () => {
       try {
-        const { suppliesData, movesData, wastesData } =
-          await fetchExportData(token, fromDate, toDate);
+        let { suppliesData, movesData, wastesData } = await fetchExportData(
+          token,
+          fromDate,
+          toDate
+        );
+
+        console.log({ suppliesData, movesData, wastesData });
+        suppliesData = await Promise.all(
+          suppliesData.map(async (item: any) => {
+            const dataFetch = await fetchPosterApi(token, "storage.getSupply", {
+              supply_id: item.supply_id,
+            });
+
+            const fullSupply = {
+              ...dataFetch.response,
+              storage_name: item.storage_name,
+            };
+            const ingredients = fullSupply.ingredients;
+
+            if (!Array.isArray(ingredients)) {
+              console.warn("ingredients is not array:", ingredients);
+              return [];
+            }
+
+            return ingredients.map((ingredient: any) => ({
+              ...fullSupply,
+              ingredient: {
+                ...ingredient,
+                ingredient_unit:
+                  ingredient?.ingredient_unit == "kg"
+                    ? "кг"
+                    : ingredient?.ingredient_unit == "p"
+                    ? "шт"
+                    : "л",
+              },
+            }));
+          })
+        );
+        suppliesData = suppliesData.flat();
+
+        movesData = await Promise.all(
+          movesData.map(async (item: any) => {
+            const dataFetch = await fetchPosterApi(token, "storage.getMove", {
+              move_id: item.moving_id,
+            });
+
+            const fullMoves = dataFetch.response[0];
+            const ingredients = fullMoves.ingredients;
+
+            if (!Array.isArray(ingredients)) {
+              console.warn("ingredients is not array:", ingredients);
+              return [];
+            }
+
+            return ingredients.map((ingredient: any) => ({
+              ...fullMoves,
+              ingredient: {
+                ...ingredient,
+                ingredient_unit:
+                  ingredient?.ingredient_unit == "kg"
+                    ? "кг"
+                    : ingredient?.ingredient_unit == "p"
+                    ? "шт"
+                    : "л",
+              },
+            }));
+          })
+        );
+
+        movesData = movesData.flat();
+
+        wastesData = await Promise.all(
+          wastesData.map(async (item: any) => {
+            const dataFetch = await fetchPosterApi(token, "storage.getWaste", {
+              waste_id: item.waste_id,
+            });
+            console.log({ dataFetch });
+
+            const fullWastes = dataFetch.response;
+            const elements = fullWastes.elements;
+
+            if (!Array.isArray(elements)) {
+              console.warn("elements is not array:", elements);
+              return [];
+            }
+            return elements.map((element: any) => {
+              let findRest = {};
+              const findStore= storesData.find(
+                (store: any) => store.storage_id == fullWastes.storage_id
+              );
+              if (element?.type == "10") {
+                findRest = ingredientsData.find(
+                  (ingredient: any) =>
+                    ingredient.ingredient_id == element.ingredient_id
+                );
+                return {
+                  ...fullWastes,
+                  ...element,
+                  ...findRest,
+                  ingredient_unit:
+                    findRest?.ingredient_unit == "kg"
+                      ? "кг"
+                      : findRest?.ingredient_unit == "p"
+                      ? "шт"
+                      : "л",
+                  storage_name: findStore?.storage_name,
+                };
+              } else {
+                findRest = productsData.find(
+                  (product: any) => product.product_id == element.product_id
+                );
+                const findIngredient = ingredientsData.find(
+                  (ing: any) =>
+                    ing.ingredient_id == element.ingredients[0]?.ingredient_id
+                );
+                return {
+                  ...element,
+                  ...findRest,
+                  ...fullWastes,
+                  ...findIngredient,
+                  ingredient_unit:
+                    findIngredient?.unit == "kg"
+                      ? "кг"
+                      : findIngredient?.unit == "p"
+                      ? "шт"
+                      : "л",
+                };
+              }
+            });
+          })
+        );
+
+        wastesData = wastesData.flat();
 
         console.log({ suppliesData, movesData, wastesData });
 
@@ -100,53 +260,56 @@ export default function TableExportRow({ code }: { code: string }) {
           {
             name: "Поставки",
             headers: [
-              "Имя склада",
-              "Склад",
-              "Поставщик",
+              "№",
               "Дата",
+              "Поставщик",
+              "Товар",
+              "Кол-во",
+              "Ед. изм.",
+              "Сумма без НДС",
+              "Склад",
               "Счёт",
-              "Сумма",
-              "Нетто",
-              "Комментарий",
-              "Имя поставщика",
-              "Удалено",
+              "Сотрудник",
             ],
-            data: suppliesData.map((item: any) => [
-              item.storage_name,
-              item.storage_id,
-              item.supplier_id,
-              item.date,
-              item.account_id,
-              item.supply_sum,
-              item.supply_sum_netto,
-              item.supply_comment,
+            data: suppliesData?.map((item: any) => [
+              item.supply_id,
+              formatCustomDate(String(item.date)),
               item.supplier_name,
-              item.delete,
+              item?.ingredient?.ingredient_name,
+              item?.ingredient?.supply_ingredient_num,
+              item?.ingredient?.ingredient_unit,
+              formatSupplySum(
+                Number(item?.ingredient?.supply_ingredient_sum_netto)
+              ) + " СУМ",
+              item.storage_name,
+              item.account_id,
+              "",
             ]),
           },
           {
             name: "Перемещения",
             headers: [
               "Дата",
-              "Из склада",
-              "Имя от",
-              "В склад",
-              "Имя куда",
-              "Польз ID",
-              "Имя",
-              "Сумма",
-              "Нетто",
+              "Наименование",
+              "Кол-во",
+              "Ед. изм.",
+              "Сумма без НДС",
+              "Комментарий",
+              "Склад отгрузки",
+              "Склад приемки",
+              "Сотрудник",
             ],
             data: movesData.map((item: any) => [
-              item.date,
-              item.from_storage, // ✅ to‘g‘rilandi
-              item.from_storage_name,
-              item.to_storage, // ✅ to‘g‘rilandi
+              formatCustomDate(String(item.date)),
+              item?.ingredient?.ingredient_name,
+              item?.ingredient?.ingredient_num,
+              item?.ingredient?.ingredient_unit,
+              formatSupplySum(Number(item?.ingredient?.ingredient_sum_netto)) +
+                " СУМ",
+              "",
               item.to_storage_name,
-              item.user_id,
+              item.from_storage_name,
               item.user_name,
-              item.sum,
-              item.sum_netto,
             ]),
           },
           // {
@@ -195,24 +358,24 @@ export default function TableExportRow({ code }: { code: string }) {
           {
             name: "Списания",
             headers: [
-              "Причина",
-              "Сумма",
-              "Нетто",
-              "Польз ID",
-              "Склад",
               "Дата",
-              "Причина ID",
-              "Удалено",
+              "Склад",
+              "Что списывается",
+              "Кол-во",
+              "Ед-ца измерения",
+              "Сумма без НДС",
+              // "Сотрудник",
+              "Причина",
             ],
             data: wastesData.map((item: any) => [
+              formatCustomDate(String(item.date)),
+              item.storage_name,
+              item?.type == 10 ? item?.ingredient_name : item?.product_name,
+              item?.type == 10 ? item?.ingredient_left : item?.count,
+              item?.ingredient_unit,
+              item?.type == 10 ? item?.total_sum_netto : item?.cost_netto,
+              // item.user_id,
               item.reason_name,
-              item.total_sum,
-              item.total_sum_netto,
-              item.user_id,
-              item.storage_id,
-              item.date,
-              item.reason_id,
-              item.delete,
             ]),
           },
         ];
