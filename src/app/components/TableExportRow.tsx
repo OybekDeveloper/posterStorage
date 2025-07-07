@@ -45,7 +45,7 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    setToken("619530:145315755b9c1405fce29e66060cd2a4");
+    // setToken("619530:145315755b9c1405fce29e66060cd2a4");
 
     const getToken = async () => {
       try {
@@ -444,7 +444,7 @@ export default function TableExportRow({ code }: { code: string }) {
 
   return (
     <div className="flex flex-col gap-4 border-b py-4 relative">
-      {true && (
+      {isPending && (
         <div className="z-10 h-full absolute top-0 left-0 w-screen flex justify-center items-center backdrop-blur-[3px]">
             <div className="spinner center">
               <div className="spinner-blade"></div>
