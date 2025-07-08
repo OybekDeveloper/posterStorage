@@ -45,7 +45,7 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    // setToken("619530:145315755b9c1405fce29e66060cd2a4");
+    setToken("619530:145315755b9c1405fce29e66060cd2a4");
 
     const getToken = async () => {
       try {
@@ -144,18 +144,52 @@ export default function TableExportRow({ code }: { code: string }) {
               return [];
             }
 
-            return ingredients.map((ingredient: any) => ({
-              ...fullSupply,
-              ingredient: {
-                ...ingredient,
-                ingredient_unit:
-                  ingredient?.ingredient_unit == "kg"
-                    ? "кг"
-                    : ingredient?.ingredient_unit == "p"
-                    ? "шт"
-                    : "л",
-              },
-            }));
+             return ingredients.map((element: any) => {
+              let findRest;
+              console.log({element})
+              const findStore = storesData.find(
+                (store: any) => store.storage_id == fullSupply.storage_id
+              );
+              if (element?.type == "10") {
+                findRest = ingredientsData.find(
+                  (ingredient: any) =>
+                    ingredient.ingredient_id == element.ingredient_id
+                );
+                return {
+                  ...fullSupply,
+                  ...element,
+                  ...findRest,
+                  ingredient_unit:
+                    element?.ingredient_unit == "kg"
+                      ? "кг"
+                      : element?.ingredient_unit == "p"
+                      ? "шт"
+                      : "л",
+                  storage_name: findStore?.storage_name,
+                };
+              } else {
+                findRest = productsData.find(
+                  (product: any) => product.product_id == element.product_id
+                );
+                console.log({element})
+                const findIngredient = ingredientsData.find(
+                  (ing: any) =>
+                    ing.ingredient_id == element?.ingredient_id
+                );
+                return {
+                  ...element,
+                  ...findRest,
+                  ...fullSupply,
+                  ...findIngredient,
+                  ingredient_unit:
+                    element?.ingredient_unit == "kg"
+                      ? "кг"
+                      : element?.ingredient_unit == "p"
+                      ? "шт"
+                      : "л",
+                };
+              }
+            });
           })
         );
         suppliesData = suppliesData.flat();
@@ -174,18 +208,51 @@ export default function TableExportRow({ code }: { code: string }) {
               return [];
             }
 
-            return ingredients.map((ingredient: any) => ({
-              ...fullMoves,
-              ingredient: {
-                ...ingredient,
-                ingredient_unit:
-                  ingredient?.ingredient_unit == "kg"
-                    ? "кг"
-                    : ingredient?.ingredient_unit == "p"
-                    ? "шт"
-                    : "л",
-              },
-            }));
+            return ingredients.map((element: any) => {
+              let findRest;
+              const findStore = storesData.find(
+                (store: any) => store.storage_id == fullMoves.storage_id
+              );
+              if (element?.type == "10") {
+                findRest = ingredientsData.find(
+                  (ingredient: any) =>
+                    ingredient.ingredient_id == element.ingredient_id
+                );
+                console.log({element})  
+                return {
+                  ...fullMoves,
+                  ...element,
+                  ...findRest,
+                  ingredient_unit:
+                    findRest?.ingredient_unit == "kg"
+                      ? "кг"
+                      : findRest?.ingredient_unit == "p"
+                      ? "шт"
+                      : "л",
+                  storage_name: findStore?.storage_name,
+                };
+              } else {
+                findRest = productsData.find(
+                  (product: any) => product.product_id == element.product_id
+                );
+                const findIngredient = ingredientsData.find(
+                  (ing: any) =>
+                    ing.ingredient_id == element?.ingredient_id
+                );
+                return {
+                  ...element,
+                  ...findRest,
+                  ...fullMoves,
+                  ...findIngredient,
+                  ingredient_unit:
+                    findIngredient?.unit == "kg"
+                      ? "кг"
+                      : findIngredient?.unit == "p"
+                      ? "шт"
+                      : "л",
+                };
+              }
+            });
           })
         );
 
@@ -196,8 +263,6 @@ export default function TableExportRow({ code }: { code: string }) {
             const dataFetch = await fetchPosterApi(token, "storage.getWaste", {
               waste_id: item.waste_id,
             });
-            console.log({ dataFetch });
-
             const fullWastes = dataFetch.response;
             const elements = fullWastes.elements;
 
@@ -275,14 +340,14 @@ export default function TableExportRow({ code }: { code: string }) {
               item.supply_id,
               formatCustomDate(String(item.date)),
               item.supplier_name,
-              item?.ingredient?.ingredient_name,
-              item?.ingredient?.supply_ingredient_num,
-              item?.ingredient?.ingredient_unit,
+              item?.ingredient_name,
+              item?.supply_ingredient_num,
+              item?.ingredient_unit,
               formatSupplySum(
-                Number(item?.ingredient?.supply_ingredient_sum_netto)
+                Number(item?.supply_ingredient_sum_netto)
               ) + " СУМ",
               item.storage_name,
-              item.account_id,
+              item.account_id,  
               "",
             ]),
           },
@@ -301,10 +366,10 @@ export default function TableExportRow({ code }: { code: string }) {
             ],
             data: movesData.map((item: any) => [
               formatCustomDate(String(item.date)),
-              item?.ingredient?.ingredient_name,
-              item?.ingredient?.ingredient_num,
-              item?.ingredient?.ingredient_unit,
-              formatSupplySum(Number(item?.ingredient?.ingredient_sum_netto)) +
+              item?.type == 10 ? item?.ingredient_name : item?.product_name,
+              item?.ingredient_num,
+              item?.ingredient_unit,
+              formatSupplySum(Number(item?.ingredient_sum_netto)) +
                 " СУМ",
               "",
               item.to_storage_name,
@@ -446,21 +511,23 @@ export default function TableExportRow({ code }: { code: string }) {
     <div className="flex flex-col gap-4 border-b py-4 relative">
       {isPending && (
         <div className="z-[999] h-screen absolute top-0 left-0 w-screen flex justify-center items-center backdrop-blur-[3px]">
-            <div className="spinner center">
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-              <div className="spinner-blade"></div>
-            </div>
-          <h1 className="pt-10">Пожалуйста, подождите, идет загрузка данных...</h1>
+          <div className="spinner center">
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+            <div className="spinner-blade"></div>
+          </div>
+          <h1 className="pt-10">
+            Пожалуйста, подождите, идет загрузка данных...
+          </h1>
         </div>
       )}
       <div className="flex flex-col justify-center items-center gap-4">
