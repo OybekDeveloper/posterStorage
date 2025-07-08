@@ -18,7 +18,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* iFrameResizer script */}
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={inter.className}>
+        {/* Spinner hide on load */}
         <Script id="hide-spinner" strategy="afterInteractive">
           {`
             window.addEventListener("load", function () {
@@ -28,6 +36,7 @@ export default function RootLayout({
             });
           `}
         </Script>
+
         <Toaster />
         {children}
       </body>
