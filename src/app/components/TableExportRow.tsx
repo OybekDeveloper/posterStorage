@@ -75,7 +75,6 @@ export default function TableExportRow({ code }: { code: string }) {
         setProductsData(productsResponse.response || []);
         setIngredientsData(ingredientsResponse.response || []);
         setStoresData(storesData.response || []);
-        console.log({ productsResponse, ingredientsResponse });
       } catch (err) {
         toast.error("Ошибка при получении данных");
         console.error(err);
@@ -146,7 +145,6 @@ export default function TableExportRow({ code }: { code: string }) {
 
              return ingredients.map((element: any) => {
               let findRest;
-              console.log({element})
               const findStore = storesData.find(
                 (store: any) => store.storage_id == fullSupply.storage_id
               );
@@ -171,7 +169,6 @@ export default function TableExportRow({ code }: { code: string }) {
                 findRest = productsData.find(
                   (product: any) => product.product_id == element.product_id
                 );
-                console.log({element})
                 const findIngredient = ingredientsData.find(
                   (ing: any) =>
                     ing.ingredient_id == element?.ingredient_id
@@ -218,7 +215,6 @@ export default function TableExportRow({ code }: { code: string }) {
                   (ingredient: any) =>
                     ingredient.ingredient_id == element.ingredient_id
                 );
-                console.log({element})  
                 return {
                   ...fullMoves,
                   ...element,
