@@ -44,7 +44,7 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    setToken("619530:17786816d3f367cc8297bf71e9275e9d");
+    // setToken("619530:17786816d3f367cc8297bf71e9275e9d");
 
     const getToken = async () => {
       try {
