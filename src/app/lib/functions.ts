@@ -22,7 +22,7 @@ export function formatCustomDate(dateString: string) {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
 
-  return `${day} ${month} ${hours}:${minutes} ,${year}`;
+  return `${day} ${month} ${hours}:${minutes}`;
 }
 export function formatSupplySum(sum: number | string | null | undefined) {
   if (typeof sum !== "number") return "Noto‘g‘ri qiymat";
