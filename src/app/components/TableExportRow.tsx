@@ -50,8 +50,8 @@ export default function TableExportRow({ code }: { code: string }) {
     const getToken = async () => {
       try {
         const res = await fetch(`/api/token?code=${code}`);
-        console.log("Token fetch response:", res);
         const data = await res.json();
+        console.log("Token fetch response:", data);
         setToken(data.token);
       } catch (err) {
         toast.error("Ошибка при получении токена");
