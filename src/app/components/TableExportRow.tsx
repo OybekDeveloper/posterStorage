@@ -22,15 +22,26 @@ const quickRanges = {
   last30Days: { label: "Последний месяц", from: subDays(today, 29), to: today },
 };
 
+const safePostMessage = (message: any, targetOrigin: string = "*") => {
+  if (typeof window !== "undefined" && window.top && window.top !== window) {
+    try {
+      window.top.postMessage(message, targetOrigin);
+    } catch (error) {
+      console.warn("PostMessage failed:", error);
+    }
+  }
+};
+
 export default function TableExportRow({ code }: { code: string }) {
   const [range, setRange] = useState<DateRange>();
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [token, setToken] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [productsData, setProductsData] = useState<any[]>([]);
   const [ingredientsData, setIngredientsData] = useState<any[]>([]);
   const [storesData, setStoresData] = useState<any[]>([]);
-  const [isPending,setIsPending] = useState(false);
+
   const fromDate = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const toDate = range?.to ? format(range.to, "yyyy-MM-dd") : "";
 
@@ -44,19 +55,40 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    // setToken("619530:17786816d3f367cc8297bf71e9275e9d");
+    // setToken("619530:145315755b9c1405fce29e66060cd2a4");
+
+    // Xavfsiz load event handler
+    const handleLoad = () => {
+      safePostMessage({ hideSpinner: true });
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("load", handleLoad, false);
+
+      // Agar sahifa allaqachon yuklangan bo'lsa
+      if (document.readyState === "complete") {
+        handleLoad();
+      }
+    }
 
     const getToken = async () => {
       try {
         const res = await fetch(`/api/token?code=${code}`);
-
         const data = await res.json();
+        console.log("Token fetch response:", data);
         setToken(data.token);
       } catch (err) {
         toast.error("Ошибка при получении токена");
       }
     };
+
     if (code) getToken();
+    // Cleanup
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("load", handleLoad, false);
+      }
+    };
   }, [code]);
 
   useEffect(() => {
@@ -82,7 +114,7 @@ export default function TableExportRow({ code }: { code: string }) {
     fetchData();
   }, [token]);
 
-  const handleExport = async() => {
+  const handleExport = async () => {
     if (!token || !fromDate || !toDate) {
       toast.error("Пожалуйста, выберите дату");
       setErrorMessage("Пожалуйста, выберите дату");
@@ -100,6 +132,7 @@ export default function TableExportRow({ code }: { code: string }) {
     }
     setErrorMessage("");
 
+    
       try {
         setIsPending(true);
         let { suppliesData, movesData, wastesData } = await fetchExportData(
@@ -126,7 +159,7 @@ export default function TableExportRow({ code }: { code: string }) {
               return [];
             }
 
-             return ingredients.map((element: any) => {
+            return ingredients.map((element: any) => {
               let findRest;
               const findStore = storesData.find(
                 (store: any) => store.storage_id == fullSupply.storage_id
@@ -153,8 +186,7 @@ export default function TableExportRow({ code }: { code: string }) {
                   (product: any) => product.product_id == element.product_id
                 );
                 const findIngredient = ingredientsData.find(
-                  (ing: any) =>
-                    ing.ingredient_id == element?.ingredient_id
+                  (ing: any) => ing.ingredient_id == element?.ingredient_id
                 );
                 return {
                   ...element,
@@ -215,8 +247,7 @@ export default function TableExportRow({ code }: { code: string }) {
                   (product: any) => product.product_id == element.product_id
                 );
                 const findIngredient = ingredientsData.find(
-                  (ing: any) =>
-                    ing.ingredient_id == element?.ingredient_id
+                  (ing: any) => ing.ingredient_id == element?.ingredient_id
                 );
                 return {
                   ...element,
@@ -322,11 +353,10 @@ export default function TableExportRow({ code }: { code: string }) {
               item?.ingredient_name,
               item?.supply_ingredient_num,
               item?.ingredient_unit,
-              formatSupplySum(
-                Number(item?.supply_ingredient_sum_netto)
-              ) + " СУМ",
+              formatSupplySum(Number(item?.supply_ingredient_sum_netto)) +
+                " СУМ",
               item.storage_name,
-              item.account_id,  
+              item.account_id,
               "",
             ]),
           },
@@ -348,8 +378,7 @@ export default function TableExportRow({ code }: { code: string }) {
               item?.type == 10 ? item?.ingredient_name : item?.product_name,
               item?.ingredient_num,
               item?.ingredient_unit,
-              formatSupplySum(Number(item?.ingredient_sum_netto)) +
-                " СУМ",
+              formatSupplySum(Number(item?.ingredient_sum_netto)) + " СУМ",
               "",
               item.to_storage_name,
               item.from_storage_name,
