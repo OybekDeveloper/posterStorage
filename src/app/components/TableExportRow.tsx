@@ -45,12 +45,12 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    setToken("619530:145315755b9c1405fce29e66060cd2a4");
+    // setToken("619530:145315755b9c1405fce29e66060cd2a4");
 
     const getToken = async () => {
       try {
         const res = await fetch(`/api/token?code=${code}`);
-
+        console.log("Token fetch response:", res);
         const data = await res.json();
         setToken(data.token);
       } catch (err) {
@@ -127,7 +127,7 @@ export default function TableExportRow({ code }: { code: string }) {
               return [];
             }
 
-             return ingredients.map((element: any) => {
+            return ingredients.map((element: any) => {
               let findRest;
               const findStore = storesData.find(
                 (store: any) => store.storage_id == fullSupply.storage_id
@@ -154,8 +154,7 @@ export default function TableExportRow({ code }: { code: string }) {
                   (product: any) => product.product_id == element.product_id
                 );
                 const findIngredient = ingredientsData.find(
-                  (ing: any) =>
-                    ing.ingredient_id == element?.ingredient_id
+                  (ing: any) => ing.ingredient_id == element?.ingredient_id
                 );
                 return {
                   ...element,
@@ -216,8 +215,7 @@ export default function TableExportRow({ code }: { code: string }) {
                   (product: any) => product.product_id == element.product_id
                 );
                 const findIngredient = ingredientsData.find(
-                  (ing: any) =>
-                    ing.ingredient_id == element?.ingredient_id
+                  (ing: any) => ing.ingredient_id == element?.ingredient_id
                 );
                 return {
                   ...element,
@@ -323,11 +321,10 @@ export default function TableExportRow({ code }: { code: string }) {
               item?.ingredient_name,
               item?.supply_ingredient_num,
               item?.ingredient_unit,
-              formatSupplySum(
-                Number(item?.supply_ingredient_sum_netto)
-              ) + " СУМ",
+              formatSupplySum(Number(item?.supply_ingredient_sum_netto)) +
+                " СУМ",
               item.storage_name,
-              item.account_id,  
+              item.account_id,
               "",
             ]),
           },
@@ -349,8 +346,7 @@ export default function TableExportRow({ code }: { code: string }) {
               item?.type == 10 ? item?.ingredient_name : item?.product_name,
               item?.ingredient_num,
               item?.ingredient_unit,
-              formatSupplySum(Number(item?.ingredient_sum_netto)) +
-                " СУМ",
+              formatSupplySum(Number(item?.ingredient_sum_netto)) + " СУМ",
               "",
               item.to_storage_name,
               item.from_storage_name,
