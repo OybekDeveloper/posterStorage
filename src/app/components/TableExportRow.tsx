@@ -83,7 +83,6 @@ export default function TableExportRow({ code }: { code: string }) {
     };
 
     if (code) getToken();
-
     // Cleanup
     return () => {
       if (typeof window !== "undefined") {
@@ -92,28 +91,28 @@ export default function TableExportRow({ code }: { code: string }) {
     };
   }, [code]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!token) return;
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (!token) return;
 
-      try {
-        const [productsResponse, ingredientsResponse, storesData] =
-          await Promise.all([
-            fetchPosterApi(token, "menu.getProducts"),
-            fetchPosterApi(token, "menu.getIngredients"),
-            fetchPosterApi(token, "storage.getStorages"),
-          ]);
+  //     try {
+  //       const [productsResponse, ingredientsResponse, storesData] =
+  //         await Promise.all([
+  //           fetchPosterApi(token, "menu.getProducts"),
+  //           fetchPosterApi(token, "menu.getIngredients"),
+  //           fetchPosterApi(token, "storage.getStorages"),
+  //         ]);
 
-        setProductsData(productsResponse.response || []);
-        setIngredientsData(ingredientsResponse.response || []);
-        setStoresData(storesData.response || []);
-      } catch (err) {
-        toast.error("Ошибка при получении данных");
-        console.error(err);
-      }
-    };
-    fetchData();
-  }, [token]);
+  //       setProductsData(productsResponse.response || []);
+  //       setIngredientsData(ingredientsResponse.response || []);
+  //       setStoresData(storesData.response || []);
+  //     } catch (err) {
+  //       toast.error("Ошибка при получении данных");
+  //       console.error(err);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [token]);
 
   const handleExport = () => {
     if (!token || !fromDate || !toDate) {
