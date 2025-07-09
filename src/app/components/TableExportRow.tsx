@@ -22,6 +22,16 @@ const quickRanges = {
   last30Days: { label: "Последний месяц", from: subDays(today, 29), to: today },
 };
 
+const safePostMessage = (message: any, targetOrigin: string = "*") => {
+  if (typeof window !== "undefined" && window.top && window.top !== window) {
+    try {
+      window.top.postMessage(message, targetOrigin);
+    } catch (error) {
+      console.warn("PostMessage failed:", error);
+    }
+  }
+};
+
 export default function TableExportRow({ code }: { code: string }) {
   const [range, setRange] = useState<DateRange>();
   const [showCalendar, setShowCalendar] = useState(false);
@@ -47,6 +57,20 @@ export default function TableExportRow({ code }: { code: string }) {
   useEffect(() => {
     // setToken("619530:145315755b9c1405fce29e66060cd2a4");
 
+    // Xavfsiz load event handler
+    const handleLoad = () => {
+      safePostMessage({ hideSpinner: true });
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("load", handleLoad, false);
+
+      // Agar sahifa allaqachon yuklangan bo'lsa
+      if (document.readyState === "complete") {
+        handleLoad();
+      }
+    }
+
     const getToken = async () => {
       try {
         const res = await fetch(`/api/token?code=${code}`);
@@ -57,7 +81,15 @@ export default function TableExportRow({ code }: { code: string }) {
         toast.error("Ошибка при получении токена");
       }
     };
+
     if (code) getToken();
+
+    // Cleanup
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("load", handleLoad, false);
+      }
+    };
   }, [code]);
 
   useEffect(() => {
