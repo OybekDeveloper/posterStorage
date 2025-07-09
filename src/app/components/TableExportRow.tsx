@@ -45,7 +45,7 @@ export default function TableExportRow({ code }: { code: string }) {
       : "Выберите дату";
 
   useEffect(() => {
-    // setToken("619530:145315755b9c1405fce29e66060cd2a4");
+    setToken("619530:145315755b9c1405fce29e66060cd2a4");
 
     const getToken = async () => {
       try {
@@ -83,22 +83,6 @@ export default function TableExportRow({ code }: { code: string }) {
     fetchData();
   }, [token]);
 
-  const splitAndAppendSheets = (
-    wb: XLSX.WorkBook,
-    data: any[],
-    headers: string[],
-    name: string
-  ) => {
-    for (let i = 0; i < data.length; i += MAX_ROWS) {
-      const chunk = data.slice(i, i + MAX_ROWS);
-      const sheet = XLSX.utils.aoa_to_sheet([headers, ...chunk]);
-      XLSX.utils.book_append_sheet(
-        wb,
-        sheet,
-        `${name}_${Math.floor(i / MAX_ROWS) + 1}`
-      );
-    }
-  };
   const handleExport = () => {
     if (!token || !fromDate || !toDate) {
       toast.error("Пожалуйста, выберите дату");

@@ -3,7 +3,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Barcha route'lar uchun ruxsat beriladi
         source: "/(.*)",
         headers: [
           {
