@@ -1,3 +1,5 @@
+//auth api
+
 import { NextRequest, NextResponse } from "next/server";
 
 export async function OPTIONS() {
@@ -32,7 +34,7 @@ export async function GET(req: NextRequest) {
   formData.append("application_id", auth.application_id);
   formData.append("application_secret", auth.application_secret);
   formData.append("grant_type", "authorization_code");
-  formData.append("redirect_uri", `https://posterstorage.onrender.com/api/auth`);
+  formData.append("redirect_uri", `https://poster-storage.vercel.app/api/auth`);
   formData.append("code", auth.code);
 
   try {
@@ -55,7 +57,7 @@ export async function GET(req: NextRequest) {
     }
 
     const res = NextResponse.redirect(
-      `https://posterstorage.onrender.com?token=${data.access_token}`
+      `https://poster-storage.vercel.app/?token=${data.access_token}`
     );
 
     // Tokenni cookie-ga yozamiz
